@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Passenger Prediction</title>
+</head>
+<body>
+    <h1>Airline Passenger Prediction</h1>
+    <form method="POST" action="/predict">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" 
+               min="{{ min_date.strftime('%Y-%m-%d') }}" 
+               max="{{ max_date.strftime('%Y-%m-%d') }}">
+        
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" 
+               min="{{ min_date.strftime('%Y-%m-%d') }}" 
+               max="{{ max_date.strftime('%Y-%m-%d') }}">
+        
+        <button type="submit">Predict</button>
+    </form>
+</body>
+</html>

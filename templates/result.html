@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Result</title>
+</head>
+<body>
+    <h1>Prediction Results</h1>
+    {% if mae and rmse %}
+    <p>MAE: {{ mae }}, RMSE: {{ rmse }}</p>
+    {% endif %}
+    <div id="plot">{{ plot|safe }}</div>
+    <a href="/">Make Another Prediction</a>
+</body>
+</html>
