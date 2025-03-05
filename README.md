@@ -11,7 +11,7 @@ You might also want to add:
 - LSTM/GRU Networks: Models complex non-linear patterns and long-term dependencies.
 
 ### Models Fusion
-Models are fused into one by just finding average. Ideally it should be tuned for each particular case. 
+Fusion Technique: Stacking. Models are fused into one by just finding average. Ideally it should be tuned for each particular case. 
 ```python
 np.mean([prophet_pred.values, xgb_pred, sarima_pred.values, ets_pred.values])
 ```
@@ -31,3 +31,17 @@ python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays sta
 Only some periods are enough to train the model. 
 After Training it fills in gaps nicely
 ![prediction with missing periods](./Screenshot_20250305_103003.png)
+
+## Possible improvements
+- Generate out-of-fold (OOF) predictions on validation data to avoid overfitting.
+- Use these predictions as input features for a meta-model, such as:
+  - Linear Regression (simple, explainable).
+  - XGBoost/Neural Network (captures non-linear interactions).
+
+### Key Considerations
+- Temporal Cross-Validation: Use forward chaining (e.g., TimeSeriesSplit in sklearn) to preserve time order.
+- Feature Engineering: Include lagged values, rolling averages, and calendar features (month, holidays).
+- Hybrid Approaches: Combine statistical models (SARIMA) with ML (XGBoost) outputs in a final layer.
+
+### Alternative: Weighted Averaging
+- Optimize weights for base models (e.g., inverse of validation RMSE) for a blended prediction.
