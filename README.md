@@ -1,4 +1,4 @@
-# Fusion model
+# Fused prediction model
 Time series prediction of real world data which in reality affected by many factors but they are not seen, so some safictication should be used here. Using just simple ARIMA or XGboost is not a good option. 
 Model uses daily airtraffic - number of passangers, which it tries to predict with several tecniques blinded together into one model. 
 Among many other examples, particulary was implemented: (Prophet + XGBoost) with a Flask web service.
@@ -17,7 +17,6 @@ np.mean([prophet_pred.values, xgb_pred, sarima_pred.values, ets_pred.values])
 ```
 You can choose which combination of models works the best way for you, for example, by choosing the least error or you might be interested in jusrt prediction a particular time window
 
-
 ### Installation
 ```
 pip install flask pandas numpy plotly prophet xgboost holidays statsmodels
@@ -26,6 +25,15 @@ or
 ```
 python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays statsmodels
 ```
+
+## Prediction steps
+1. Preprocess data (log-transform, handle missing values).
+2. Split into train/validation/test with temporal ordering.
+3. Train SARIMA, Prophet, LSTM on train set.
+4. Generate validation predictions (OOF) from each model.
+5. Train meta-model (e.g., XGBoost) on validation predictions + features.
+6. Evaluate stacked model on test data.
+7. 
 
 ## Results
 Only some periods are enough to train the model. 
