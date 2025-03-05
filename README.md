@@ -6,8 +6,9 @@ Among many other examples, particulary was implemented: (Prophet + XGBoost) with
 ### SubModels
 2 Models are fused into one by just finding average. Ideally it should be tuned for each particular case. 
 ```python
-np.mean([prophet_pred.values, xgb_pred, sarima_pred.values])
+np.mean([prophet_pred.values, xgb_pred, sarima_pred.values, ets_pred.values])
 ```
+You can choose which combination of models works the best way for you, for example, by choosing the least error or you might be interested in jusrt prediction a particular time window
 
 ## Installation
 ```
@@ -21,4 +22,4 @@ python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays sta
 ## Results
 Only some periods are enough to train the model. 
 After Training it fills in gaps nicely
-![prediction with missing periods](./Screenshot_20250305_102200.png)
+![prediction with missing periods](./Screenshot_20250305_103003.png)
