@@ -2,21 +2,134 @@
 <html>
 <head>
     <title>Passenger Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* Light Blue Background */
+            margin: 20px;
+        }
+
+        h1 {
+            color: #4682B4; /* Steel Blue */
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            background-color: #e6f7ff; /* Lighter Blue Form Background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .date-inputs {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+            color: #4682B4;
+        }
+
+        input[type="date"] {
+            padding: 8px;
+            border: 1px solid #B0C4DE; /* Light Steel Blue Border */
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .model-selection {
+            margin-top: 10px; /* Add some space between date inputs and model selection */
+        }
+
+        button[type="submit"] {
+            background-color: #4682B4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #5F9EA0; /* Cadet Blue */
+        }
+
+        @media (min-width: 768px) {
+            .form-container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .date-inputs {
+                margin-right: 20px; /* Add space between date inputs and model selection */
+            }
+
+            .model-selection {
+                margin-top: 0; /* Reset margin for larger screens */
+            }
+        }
+
+        /* Result Styles */
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e6f7ff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .results h2 {
+            color: #4682B4;
+        }
+
+        .results p {
+            color: #333;
+        }
+    </style>
 </head>
 <body>
     <h1>Airline Passenger Prediction</h1>
     <form method="POST" action="/predict">
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" 
-               min="{{ min_date.strftime('%Y-%m-%d') }}" 
-               max="{{ max_date.strftime('%Y-%m-%d') }}">
+        <div class="form-container">
+            <div class="date-inputs">
+                <label for="start_date">Start Date:</label>
+                <input type="date" id="start_date" name="start_date" 
+                       min="{{ min_date.strftime('%Y-%m-%d') }}" 
+                       max="{{ max_date.strftime('%Y-%m-%d') }}"
+                       value="{{ start_date }}">
         
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" 
-               min="{{ min_date.strftime('%Y-%m-%d') }}" 
-               max="{{ max_date.strftime('%Y-%m-%d') }}">
-        
+                <label for="end_date">End Date:</label>
+                <input type="date" id="end_date" name="end_date" 
+                       min="{{ min_date.strftime('%Y-%m-%d') }}" 
+                       max="{{ max_date.strftime('%Y-%m-%d') }}"
+                       value="{{ end_date }}">
+            </div>
+            
+            <div class="model-selection">
+                <label>Select Models:</label><br>
+                <input type="checkbox" id="prophet" name="prophet" {% if prophet_selected %}checked{% endif %}>
+                <label for="prophet">Prophet</label><br>
+                <input type="checkbox" id="xgb" name="xgb" {% if xgb_selected %}checked{% endif %}>
+                <label for="xgb">XGBoost</label><br><br>
+            </div>
+        </div>
+
         <button type="submit">Predict</button>
     </form>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    {% if plot %}
+    <div class="results">
+        <h2>Prediction Results</h2>
+        <p>MAE: {{ mae }}, RMSE: {{ rmse }}</p>
+        <div id="plot">{{ plot|safe }}</div>
+    </div>
+    {% endif %}
 </body>
 </html>
