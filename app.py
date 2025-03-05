@@ -7,8 +7,7 @@ import plotly.graph_objs as go
 import holidays
 from datetime import datetime, timedelta
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-#from statsmodels.tsa.exponential_smoothing.ets import ETSModel as ETS
-#from statsforecast import ETS
+from statsmodels.tsa.exponential_smoothing.ets import ETSModel as ETS
 
 # Load data
 data = pd.read_csv('data/passengers.csv')
@@ -59,6 +58,11 @@ sarima_df = df_full['actual'].dropna()
 sarima_model = SARIMAX(sarima_df, order=(5, 1, 0), seasonal_order=(1, 1, 0, 7))
 sarima_model_fit = sarima_model.fit(disp=False)
 
+# ETS Model
+ets_df = df_full['actual'].dropna()
+ets_model = ETS(ets_df, error='add', trend='add', seasonal='add', seasonal_periods=7)
+ets_model_fit = ets_model.fit()
+
 # ========================
 # FLASK WEB SERVICE
 # ========================
@@ -81,6 +85,7 @@ def predict():
     prophet_selected = request.form.get('prophet') == 'on'
     xgb_selected = request.form.get('xgb') == 'on'
     sarima_selected = request.form.get('sarima') == 'on'
+    ets_selected = request.form.get('ets') == 'on'
 
     # Create prediction DataFrame
     pred_dates = pd.date_range(start=start_date, end=end_date)
@@ -109,6 +114,9 @@ def predict():
     if sarima_selected:
         sarima_pred = sarima_model_fit.get_forecast(steps=len(pred_df)).predicted_mean
         predictions.append(sarima_pred.values)
+    if ets_selected:
+        ets_pred = ets_model_fit.forecast(steps=len(pred_df))
+        predictions.append(ets_pred.values)
     
     # Fusion prediction
     if predictions:
@@ -120,7 +128,8 @@ def predict():
                                error="Please select at least one model.",
                                prophet_selected=prophet_selected,
                                xgb_selected=xgb_selected,
-                               sarima_selected=sarima_selected)
+                               sarima_selected=sarima_selected,
+                               ets_selected=ets_selected)
     
     # Merge with actuals
     result = pred_df.join(df_full['actual'])
@@ -168,7 +177,8 @@ def predict():
                            end_date=end_date.strftime('%Y-%m-%d'),
                            prophet_selected=prophet_selected,
                            xgb_selected=xgb_selected,
-                           sarima_selected=sarima_selected)
+                           sarima_selected=sarima_selected,
+                           ets_selected=ets_selected)
 
 if __name__ == '__main__':
     app.run(debug=True)
