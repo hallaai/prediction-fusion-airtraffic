@@ -69,6 +69,10 @@ def predict():
     start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
     end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
     
+    # Get selected models
+    prophet_selected = request.form.get('prophet') == 'on'
+    xgb_selected = request.form.get('xgb') == 'on'
+
     # Create prediction DataFrame
     pred_dates = pd.date_range(start=start_date, end=end_date)
     pred_df = pd.DataFrame(index=pred_dates)
@@ -83,15 +87,27 @@ def predict():
     last_known = df_full['actual'].last_valid_index()
     pred_df['lag_7'] = df_full.loc[last_known - timedelta(days=7):last_known, 'actual'].mean()
     
-    # Prophet predictions
-    future = prophet_model.make_future_dataframe(periods=len(pred_df))
-    prophet_pred = prophet_model.predict(future.tail(len(pred_df)))['yhat']
+    # Make predictions based on selected models
+    if prophet_selected:
+        future = prophet_model.make_future_dataframe(periods=len(pred_df))
+        prophet_pred = prophet_model.predict(future.tail(len(pred_df)))['yhat']
+    if xgb_selected:
+        xgb_pred = xgb_model.predict(pred_df[['day_of_week', 'month', 'is_weekend', 'is_holiday', 'lag_7']])
     
-    # XGBoost predictions
-    xgb_pred = xgb_model.predict(pred_df[['day_of_week', 'month', 'is_weekend', 'is_holiday', 'lag_7']])
-    
-    # Fusion prediction (average)
-    pred_df['predicted'] = (prophet_pred.values + xgb_pred) / 2
+    # Fusion prediction
+    if prophet_selected and xgb_selected:
+        pred_df['predicted'] = (prophet_pred.values + xgb_pred) / 2
+    elif prophet_selected:
+        pred_df['predicted'] = prophet_pred.values
+    elif xgb_selected:
+        pred_df['predicted'] = xgb_pred
+    else:
+        return render_template('index.html', 
+                               min_date=datetime(2023, 11, 23), 
+                               max_date=datetime(2025, 12, 31),
+                               error="Please select at least one model.",
+                               prophet_selected=prophet_selected,
+                               xgb_selected=xgb_selected)
     
     # Merge with actuals
     result = pred_df.join(df_full['actual'])
@@ -129,10 +145,16 @@ def predict():
         mae = round(np.mean(np.abs(y_true - y_pred)), 2)
         rmse = round(np.sqrt(np.mean((y_true - y_pred)**2)), 2)
 
-    return render_template('result.html',
-                        plot=fig.to_html(full_html=False),
-                        mae=mae,
-                        rmse=rmse)
+    return render_template('index.html', 
+                           min_date=datetime(2023, 11, 23), 
+                           max_date=datetime(2025, 12, 31),
+                           plot=fig.to_html(full_html=False),
+                           mae=mae,
+                           rmse=rmse,
+                           start_date=start_date.strftime('%Y-%m-%d'),
+                           end_date=end_date.strftime('%Y-%m-%d'),
+                           prophet_selected=prophet_selected,
+                           xgb_selected=xgb_selected)
 
 if __name__ == '__main__':
     app.run(debug=True)
