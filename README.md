@@ -6,16 +6,16 @@ Among many other examples, particulary was implemented: (Prophet + XGBoost) with
 ### SubModels
 2 Models are fused into one by just finding average. Ideally it should be tuned for each particular case. 
 ```python
-(prophet_pred.values + xgb_pred) / 2
+np.mean([prophet_pred.values, xgb_pred, sarima_pred.values])
 ```
 
 ## Installation
 ```
-pip install flask pandas numpy plotly prophet xgboost holidays statsmodels statsforecast
+pip install flask pandas numpy plotly prophet xgboost holidays statsmodels
 ```
 or
 ```
-python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays statsmodels statsforecast
+python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays statsmodels
 ```
 
 ## Results
