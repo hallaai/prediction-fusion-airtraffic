@@ -4,10 +4,13 @@ from prophet import Prophet
 from xgboost import XGBRegressor
 from flask import Flask, render_template, request
 import plotly.graph_objs as go
-import plotly.express as px
 import holidays
 from datetime import datetime, timedelta
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+#from statsmodels.tsa.exponential_smoothing.ets import ETSModel as ETS
+#from statsforecast import ETS
 
+# Load data
 data = pd.read_csv('data/passengers.csv')
 df = pd.DataFrame(data, columns=['date', 'n'])
 df['date'] = pd.to_datetime(df['date'])
@@ -51,6 +54,11 @@ y = train_data['actual']
 xgb_model = XGBRegressor(n_estimators=100, max_depth=3)
 xgb_model.fit(X, y)
 
+# SARIMA Model
+sarima_df = df_full['actual'].dropna()
+sarima_model = SARIMAX(sarima_df, order=(5, 1, 0), seasonal_order=(1, 1, 0, 7))
+sarima_model_fit = sarima_model.fit(disp=False)
+
 # ========================
 # FLASK WEB SERVICE
 # ========================
@@ -72,6 +80,7 @@ def predict():
     # Get selected models
     prophet_selected = request.form.get('prophet') == 'on'
     xgb_selected = request.form.get('xgb') == 'on'
+    sarima_selected = request.form.get('sarima') == 'on'
 
     # Create prediction DataFrame
     pred_dates = pd.date_range(start=start_date, end=end_date)
@@ -88,26 +97,30 @@ def predict():
     pred_df['lag_7'] = df_full.loc[last_known - timedelta(days=7):last_known, 'actual'].mean()
     
     # Make predictions based on selected models
+    predictions = []
+    
     if prophet_selected:
         future = prophet_model.make_future_dataframe(periods=len(pred_df))
         prophet_pred = prophet_model.predict(future.tail(len(pred_df)))['yhat']
+        predictions.append(prophet_pred.values)
     if xgb_selected:
         xgb_pred = xgb_model.predict(pred_df[['day_of_week', 'month', 'is_weekend', 'is_holiday', 'lag_7']])
+        predictions.append(xgb_pred)
+    if sarima_selected:
+        sarima_pred = sarima_model_fit.get_forecast(steps=len(pred_df)).predicted_mean
+        predictions.append(sarima_pred.values)
     
     # Fusion prediction
-    if prophet_selected and xgb_selected:
-        pred_df['predicted'] = (prophet_pred.values + xgb_pred) / 2
-    elif prophet_selected:
-        pred_df['predicted'] = prophet_pred.values
-    elif xgb_selected:
-        pred_df['predicted'] = xgb_pred
+    if predictions:
+        pred_df['predicted'] = np.mean(predictions, axis=0)
     else:
         return render_template('index.html', 
                                min_date=datetime(2023, 11, 23), 
                                max_date=datetime(2025, 12, 31),
                                error="Please select at least one model.",
                                prophet_selected=prophet_selected,
-                               xgb_selected=xgb_selected)
+                               xgb_selected=xgb_selected,
+                               sarima_selected=sarima_selected)
     
     # Merge with actuals
     result = pred_df.join(df_full['actual'])
@@ -154,7 +167,8 @@ def predict():
                            start_date=start_date.strftime('%Y-%m-%d'),
                            end_date=end_date.strftime('%Y-%m-%d'),
                            prophet_selected=prophet_selected,
-                           xgb_selected=xgb_selected)
+                           xgb_selected=xgb_selected,
+                           sarima_selected=sarima_selected)
 
 if __name__ == '__main__':
     app.run(debug=True)
