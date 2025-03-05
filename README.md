@@ -33,7 +33,7 @@ python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays sta
 4. Generate validation predictions (OOF) from each model.
 5. Train meta-model (e.g., XGBoost) on validation predictions + features.
 6. Evaluate stacked model on test data.
-7. 
+
 
 ## Results
 Only some periods are enough to train the model. 
