@@ -11,11 +11,11 @@ Among many other examples, particulary was implemented: (Prophet + XGBoost) with
 
 ## Installation
 ```
-pip install flask pandas numpy plotly prophet xgboost holidays
+pip install flask pandas numpy plotly prophet xgboost holidays statsmodels statsforecast
 ```
 or
 ```
-python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays
+python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays statsmodels statsforecast
 ```
 
 ## Results
