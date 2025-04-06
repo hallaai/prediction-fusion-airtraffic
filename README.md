@@ -1,3 +1,23 @@
+## Project Structure
+
+```
+prediction-fusion-airtraffic
+├── app.py                     # Main entry point for the Flask application
+├── data
+│   └── passengers.csv         # Dataset for passenger numbers
+├── templates
+│   ├── index.html             # HTML template for the main page
+│   └── result.html            # HTML template for displaying results
+├── theory
+│   ├── Key Factors Influencing Flight Price Predictions.md
+│   ├── How Airlines Balance Revenue Maximization and Cust.md
+│   └── Booking Price Prediction Models_ Forecasting Ticket.md
+├── utils
+│   └── __init__.py            # Placeholder for utility functions (future use)
+├── requirements.txt           # Project dependencies
+└── README.md                  # Project documentation
+```
+
 # Fused prediction model
 Time series prediction of real world data which in reality affected by many factors but they are not seen, so some safictication should be used here. Using just simple ARIMA or XGboost is not a good option. 
 Model uses daily airtraffic - number of passangers, which it tries to predict with several tecniques blinded together into one model. 
