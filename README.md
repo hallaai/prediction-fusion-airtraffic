@@ -38,7 +38,7 @@ python3.12 -m pip install flask pandas numpy plotly prophet xgboost holidays sta
 ## Results
 Only some periods are enough to train the model. 
 After Training it fills in gaps nicely
-![prediction with missing periods](./Screenshot_20250305_103003.png)
+![prediction with missing periods](./prediction_result.png)
 
 ## Possible improvements
 - Generate out-of-fold (OOF) predictions on validation data to avoid overfitting.
